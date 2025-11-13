@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Absensi Siswa</title>
+  <style>
+    :root {
+      --primary: #4a4ae9;
+      --bg: #eef2ff;
+      --text-dark: #333;
+      --radius: 10px;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      color: var(--text-dark);
+    }
+    .card {
+      background: #fff;
+      padding: 25px;
+      border-radius: var(--radius);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+      width: 95%;
+      max-width: 420px;
+      animation: fadeIn 0.5s ease;
+    }
+    h3 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 15px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      transition: 0.2s ease;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 3px rgba(74,74,233,0.4);
+    }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #3737d0;
+    }
+    #status {
+      margin-top: 10px;
+      font-weight: 600;
+      text-align: center;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h3>Form Absensi</h3>
+    <form id="absensiForm">
+      <input id="nama" name="nama" placeholder="Nama" required />
+      <input id="nis" name="nis" placeholder="NIS" required />
+      <select id="jenis" name="jenis_kelamin" required>
+        <option value="">Pilih Jenis Kelamin</option>
+        <option value="Laki-laki">Laki-laki</option>
+        <option value="Perempuan">Perempuan</option>
+      </select>
+      <input id="kelas" name="kelas" placeholder="Kelas" required />
+      <button type="submit">Kirim</button>
+    </form>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyaP5s6Z3eRpukTgu0hT9mRu-CHsWTNU_ZoP5zAcHu3IBB54W5LVCZmiZtb7JCKOwMH/exec";
+    const form = document.getElementById('absensiForm');
+    const statusEl = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); // cegah reload
+      statusEl.textContent = "Mengirim data...";
+      statusEl.style.color = "black";
+
+      const formData = new FormData(form);
+
+      try {
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
+        const txt = await res.text();
+        let json;
+        try { json = JSON.parse(txt); } catch(e) { json = { message: txt }; }
+
+        if (res.ok) {
+          statusEl.style.color = 'green';
+          statusEl.textContent = json.message || 'Berhasil mengirim data!';
+          form.reset();
+        } else {
+          statusEl.style.color = 'red';
+          statusEl.textContent = json.message || `Gagal: HTTP ${res.status}`;
+        }
+
+      } catch (err) {
+        console.error(err);
+        statusEl.style.color = 'red';
+        statusEl.textContent = 'Gagal mengirim: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
