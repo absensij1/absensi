@@ -1,0 +1,57 @@
+// GANTI dengan URL Web Apps Script kamu sendiri
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyaP5s6Z3eRpukTgu0hT9mRu-CHsWTNU_ZoP5zAcHu3IBB54W5LVCZmiZtb7JCKOwMH/exec";
+
+const form = document.getElementById('absensiForm');
+const statusEl = document.getElementById('status');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  statusEl.textContent = "";
+  
+  const nama = document.getElementById('nama').value.trim();
+  const nis = document.getElementById('nis').value.trim();
+  const jenis = document.getElementById('jenis').value;
+  const kelas = document.getElementById('kelas').value.trim();
+
+  if (!nama || !nis || !jenis || !kelas) {
+    alert('Isi semua field!');
+    return;
+  }
+
+  // Gunakan URLSearchParams agar format seperti form HTML biasa
+  const params = new URLSearchParams();
+  params.append('nama', nama);
+  params.append('nis', nis);
+  params.append('jenis_kelamin', jenis);
+  params.append('kelas', kelas);
+
+  statusEl.textContent = "Mengirim data...";
+  statusEl.style.color = "black";
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      },
+      body: params.toString()
+    });
+
+    const txt = await res.text();
+    let json;
+    try { json = JSON.parse(txt); } catch (e) { json = { message: txt }; }
+
+    if (res.ok) {
+      statusEl.style.color = 'green';
+      statusEl.textContent = json.message || 'Berhasil mengirim data!';
+      form.reset();
+    } else {
+      statusEl.style.color = 'red';
+      statusEl.textContent = json.message || 'Gagal: HTTP ' + res.status;
+    }
+  } catch (err) {
+    console.error(err);
+    statusEl.style.color = 'red';
+    statusEl.textContent = 'Gagal mengirim: ' + err.message;
+  }
+});
